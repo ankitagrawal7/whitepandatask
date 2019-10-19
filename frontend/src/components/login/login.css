@@ -18,7 +18,7 @@ h2{
     background-color: #455A64;
 }
 
-input{
+.input{
     width: 100%;
     background: transparent;
     padding: 10px;
@@ -30,6 +30,15 @@ input{
 
 input::placeholder{
     color: whitesmoke;
+}
+
+.rememberme{
+    display: block;
+    margin-top: 1rem;
+}
+
+.rememberme label{
+    padding-left: 1rem;
 }
 
 .btn-holder{

@@ -8,5 +8,9 @@ module.exports = {
     ERROR: "ERROR",
     RESET: "RESET",
     LOGOUT: "LOGOUT",
-    GET_TOKEN: "GET_TOKEN"
+    GET_TOKEN: "GET_TOKEN",
+    AUTH_TYPE: {
+        NORMAL: "NORMAL",
+        OAUTH: "OAUTH"
+    }
 }

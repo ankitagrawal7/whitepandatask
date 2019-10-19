@@ -10,6 +10,6 @@ router.get("/details", (req, res) => {
                 msg: "Something went wrong. Please contact administrator."
             })
         })
-})
+});
 
 module.exports = router;

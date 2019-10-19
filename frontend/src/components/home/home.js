@@ -5,24 +5,18 @@ import * as Actions from "../../actions/actions";
 import { Redirect } from "react-router-dom";
 
 class Home extends Component {
-  componentDidMount() {
+  constructor(props){
+    super(props);
     this.props.action.getUserData();
   }
 
   logout() {
     this.props.action.logout();
+    this.props.history.push("login");
   }
 
   render() {
-    if (this.props.token === null) {
-      return (
-        <Redirect
-          to={{
-            pathname: "/login"
-          }}
-        />
-      );
-    }
+    if (!this.props.user) return <Redirect to={{ pathname: "/login" }} />;
 
     return (
       <div className="container">

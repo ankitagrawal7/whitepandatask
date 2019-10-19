@@ -3,6 +3,7 @@ import { bindActionCreators } from "redux";
 import { connect } from "react-redux";
 import "./login.css";
 import * as Actions from "../../actions/actions";
+import { AUTH_TYPE } from "./../../constants";
 
 class Login extends Component {  
 
@@ -18,7 +19,9 @@ class Login extends Component {
       email: null,
       mobileNumber: null,
       password: null,
-      otp: null
+      otp: null,
+      rememberMe: false,
+      oAuthToken: null
     };
   }
 
@@ -33,9 +36,9 @@ class Login extends Component {
       }else{
         
         if(this.state.email && this.state.password && this.state.mobileNumber && this.state.name){
-          this.props.action.register(this.state);
+          this.register(this.state);
         }else if ((this.state.email && this.state.password) || (this.state.mobileNumber && this.state.otp)) {
-          this.props.action.login(this.state);
+          this.login(this.state, AUTH_TYPE.NORMAL);
         }else{
           this.props.action.alertError({
             msg: "Please enter valid input!"
@@ -46,20 +49,41 @@ class Login extends Component {
     });
   }
 
+  register(data){
+    this.props.action.register(data);
+  }
+
+  /**
+   * 
+   * @param {Object} data Login form data
+   * @param {String} authType type of authentication [OAuth, Normal]
+   */
+  login(data, authType){
+    this.props.action.login({...data, authType});
+  }
+
   render() {
     let passOrPin = null;
     if(this.state.username !== null && this.props.user.isRegistered !== null){
       if(this.props.user.isRegistered){
-        passOrPin = (this.emailRe.test(this.state.username))? <input type="password" className="input" placeholder="Enter your password" required
-                                                              onChange={ev =>
-                                                                this.setState({ password: ev.target.value })
-                                                              }
-                                                            /> : <input type="number" className="input" min="000000" max="999999" placeholder="Enter OTP" required
-                                                              onChange={ev =>
-                                                                this.setState({ otp: ev.target.value })
-                                                              }
-                                                            />
-      }else{
+        passOrPin = (this.emailRe.test(this.state.username))? <>
+                                                                <input type="password" className="input" placeholder="Enter your password" required
+                                                                  onChange={ev => this.setState({ password: ev.target.value })} />
+                                                                <div className="rememberme">
+                                                                  <input type="checkbox" id="rememberme" name="rememberme" onChange={ev => this.setState({ rememberMe: ev.target.checked })} /> 
+                                                                  <label htmlFor="rememberme">Remember Me</label>
+                                                                </div>
+                                                              </>
+                                                              : 
+                                                              <>
+                                                                <input type="number" className="input" min="000000" max="999999" placeholder="Enter OTP" required
+                                                                onChange={ev => this.setState({ otp: ev.target.value })} />
+                                                                <div className="rememberme">
+                                                                  <input type="checkbox" id="rememberme" name="rememberme" onChange={ev => this.setState({ rememberMe: ev.target.checked })} /> 
+                                                                  <label htmlFor="rememberme">Remember Me</label>
+                                                                </div>
+                                                              </>
+      } else {
         passOrPin = (<div>
                         {(this.emailRe.test(this.state.username))? <input type="text" className="input" placeholder="Enter mobile number" required
                                                                     onChange={ev => this.setState({ mobileNumber: ev.target.value })} /> : 

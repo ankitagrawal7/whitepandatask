@@ -14,6 +14,7 @@ export default (state = INITIAL_STATE, payload) => {
             };
 
         case GET_USER_DATA:
+            console.log(payload)
             return {
                 ...state,
                 user: payload.user
@@ -29,14 +30,14 @@ export default (state = INITIAL_STATE, payload) => {
 
         case SET_USER_DATA:
             console.log(SET_USER_DATA, payload.user);
-            sessionStorage.setItem("user", JSON.stringify(payload.user));
+            // sessionStorage.setItem("user", JSON.stringify(payload.user));
             return {
                 ...state,
                 token: payload.user.token,
             };
 
         case LOGOUT:
-            sessionStorage.removeItem("user");
+            // sessionStorage.removeItem("user");
             return {
                 user: null,
                 isRegistered: null,

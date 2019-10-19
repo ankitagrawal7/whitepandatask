@@ -10,9 +10,12 @@ const User = mongoose.Schema({
         unique: true
     },
     name: String,
-    password: String,    
+    password: String,
     otp: Number,
-    accessToken: String
+    oAuthToken: {
+        type: String,
+        default: null
+    }
 });
 
 module.exports = mongoose.model("User", User);

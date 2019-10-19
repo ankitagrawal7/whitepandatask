@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { NEW_USER, EXISTING_USER, GET_USER_DATA, SET_USER_DATA, SUCCESS, ERROR, RESET, LOGOUT, GET_TOKEN } from "./../constants";
+// const url = "http://localhost:3000";
 const url = "";
 
 export const verify = (data) => (dispatch) => {
@@ -24,7 +25,7 @@ export const verify = (data) => (dispatch) => {
 }
 
 export const login = (data) => (dispatch) => {
-    return axios.post(`${url}/auth/login`, data)
+    return axios.post(`${url}/auth/login`, data, {withCredentials: true})
         .then((response) => {
             dispatch({
                 type: SET_USER_DATA,
@@ -54,19 +55,26 @@ export const register = (data) => (dispatch) => {
         });
 }
 
-export const getUserData = () => (dispatch, getState) => {
-    const {
-        user
-    } = getState();
-    return axios.get(`${url}/user/details`, {
-            headers: {
-                "Authorization": user.token
-            }
-        })
+export const getUserData = () => (dispatch) => {
+    return axios.get(`${url}/user/details`, { withCredentials: true })
         .then((response) => {
             dispatch({
                 type: GET_USER_DATA,
                 user: response.data
+            })
+        }).catch((error) => {
+            console.log(error);
+            dispatch({
+                type: LOGOUT
+            })
+        });
+}
+
+export const logout = () => (dispatch) => {
+    return axios.get(`${url}/auth/logout`, { withCredentials: true })
+        .then((response) => {
+            dispatch({
+                type: LOGOUT
             })
         });
 }
@@ -88,7 +96,3 @@ export const reset = () => ({
 export const getToken = () => ({
     type: GET_TOKEN
 });
-
-export const logout = () => ({
-    type: LOGOUT
-})

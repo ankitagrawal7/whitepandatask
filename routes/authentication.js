@@ -8,6 +8,10 @@ const accountSid = 'ACf9ec2d7f88200e6add11d295586a987e';
 const authToken = 'd2ba668a7f4c937fb25e045e0aac4844';
 const secret = 'secret';
 const client = require('twilio')(accountSid, authToken);
+const AUTH_TYPE = {
+    NORMAL: "NORMAL",
+    OAUTH: "OAUTH"
+}
 
 router.post("/verify", async (req, res) => {
 
@@ -68,6 +72,8 @@ router.post("/register", (req, res) => {
                 user_id: user._id
             }, secret);
 
+            res.cookie('rememberme', token, { expires: 1000 * 60 * 10, httpOnly: true });
+
             res.status(200).send({
                msg: "Registration Successfull",
                token
@@ -76,7 +82,8 @@ router.post("/register", (req, res) => {
 });
 
 router.post("/login", (req, res) => {
-    const type = (req.body.email)? "email" : "mobile";
+    console.log(req.body);
+    const type = (req.body.authType === AUTH_TYPE.NORMAL)? (req.body.email)? "email" : "mobile" : req.body.authType;
     User.findOne({$or: [
         { email: req.body.email, mobileNumber: { $nin: [ undefined, null ] } },
         { mobileNumber: req.body.mobileNumber, email: { $nin: [ undefined, null ] } }
@@ -85,6 +92,9 @@ router.post("/login", (req, res) => {
             const token = jwt.sign({
                 user_id: user._id
             }, secret);
+
+            if(req.body.rememberMe) res.cookie('rememberme', token, { httpOnly: true });
+            else res.cookie('rememberme', token, { expires: new Date((new Date()).getTime() + 10*60000), httpOnly: true });
 
             res.status(200).send({
                 msg: "Login Successful",
@@ -103,10 +113,19 @@ router.post("/login", (req, res) => {
     });
 });
 
+router.get("/logout", (req, res) => {
+    res.cookie('rememberme', {expires: Date.now()});
+    res.send({
+        msg: "Logout Successful"
+    })
+});
+
 function verify(type, form, user) {
-    if(type === "email"){
+    if(type === AUTH_TYPE.OAUTH){
+        return (user.oAuthToken !== null)? user.oAuthToken === form.oAuthToken : false;
+    } else if(type === "email"){
         return bcrypt.compareSync(form.password, user.password);
-    }else{
+    }else {
         return user.otp == form.otp;
     }
 }

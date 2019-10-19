@@ -1,42 +1,61 @@
 const express = require('express');
 const app = express();
 const path = require("path");
-// const cors = require("cors");
+const fs = require("fs");
 require("./db");
-const User = require("./models/user");
-const jwt = require('jsonwebtoken');
-const secret = 'secret';
+// const cors = require('cors');
+// app.use(cors({
+//     origin: 'https://localhost:3000',
+//     allowedHeaders: ["Authorization", "Content-Type"],
+//     credentials: true
+// }));
+const { cors, authorize } = require('./middlewares/middlewares');
+const cookieParser = require('cookie-parser');
+
 
 app.use(express.json());
-// app.use(cors());
-
+app.use(cors);
+app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "frontend/build")));
-
-const authorize = async (req, res, next) => {
-    const token = req.header('Authorization')
-    const data = jwt.verify(token, secret)
-    try {
-        const user = await User.findOne({ _id: data.user_id })
-        if (!user) {
-            throw new Error()
-        }
-        req.user = user
-        req.token = token
-        next()
-    } catch (error) {
-        res.status(401).send({ error: 'Not authorized to access this resource' })
-    }
-}
 
 app.use("/auth", require("./routes/authentication"));
 app.use("/user", authorize, require("./routes/user"));
 
 const port = process.env.PORT || 3000;
+const protocol = process.env.PROTOCOL || 'https';
+let server;
 
-app.get('/', function (req, res) {
-    res.send('Hello world!');
-});
+if (protocol === 'https') {
+	const { execSync } = require('child_process');
+	const execOptions = { encoding: 'utf-8', windowsHide: true };
+	let key = './certs/key.pem';
+	let certificate = './certs/certificate.pem';
+	
+	if ( ! fs.existsSync( key ) || ! fs.existsSync( certificate ) ) {
+		try {
+			execSync( 'openssl version', execOptions );
+			execSync(
+				`openssl req -x509 -newkey rsa:2048 -keyout ./certs/key.tmp.pem -out ${ certificate } -days 365 -nodes -subj "/C=IN/ST=MH/L=Pune/O=Global Security/CN=localhost"`,
+				execOptions
+			);
+			execSync( `openssl rsa -in ./certs/key.tmp.pem -out ${ key }`, execOptions );
+			execSync( 'rm ./certs/key.tmp.pem', execOptions );
+		} catch ( error ) {
+			console.error( error );
+		}
+	}
 
-app.listen(port, () => {
+	const options = {
+        key: fs.readFileSync(key),
+        cert: fs.readFileSync(certificate),
+        passphrase : 'password'
+    };
+    
+	server = require('https').createServer(options, app);
+} else {
+    server = require('http').createServer(app);
+}
+
+server.listen(port, () => {
     console.log(`listening on *: ${port}`);
 });

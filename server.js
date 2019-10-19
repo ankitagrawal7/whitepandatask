@@ -9,7 +9,7 @@ require("./db");
 //     allowedHeaders: ["Authorization", "Content-Type"],
 //     credentials: true
 // }));
-const { cors, authorize } = require('./middlewares/middlewares');
+const { cors, authorize, cache } = require('./middlewares/middlewares');
 const cookieParser = require('cookie-parser');
 
 
@@ -19,7 +19,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "frontend/build")));
 
 app.use("/auth", require("./routes/authentication"));
-app.use("/user", authorize, require("./routes/user"));
+app.use("/user", [authorize, cache(20)], require("./routes/user"));
 
 const port = process.env.PORT || 3000;
 const protocol = process.env.PROTOCOL || 'https';

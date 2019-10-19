@@ -113,12 +113,43 @@ router.post("/login", (req, res) => {
     });
 });
 
+router.get('/oauth/redirect', (req, res) => {
+    getAccessToken(`http://sample.google.com`).then(response => {
+        const token = response.access_token || response.token;
+        getUserData(token)
+        .then(data => {
+            
+        })
+    });
+})
+
 router.get("/logout", (req, res) => {
     res.cookie('rememberme', {expires: Date.now()});
     res.send({
         msg: "Logout Successful"
     })
 });
+
+async function getAccessToken(url){
+    return axios({
+      method: 'post',
+      url: url,
+      headers: {
+           accept: 'application/json'
+      }
+    })
+}
+
+async function getUserData(accessToken){
+    return axios({
+      method: 'post',
+      url: url,
+      headers: {
+           accept: 'application/json',
+           Authorization: accessToken
+      }
+    });
+}
 
 function verify(type, form, user) {
     if(type === AUTH_TYPE.OAUTH){
